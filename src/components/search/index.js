@@ -1,8 +1,11 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { Flex, Box } from '@grid'
 import { useMember } from '@lib/auth'
 import withPage from '@lib/page/withPage'
 import SearchResults from './SearchResults'
+
+import { Fetch } from '@lib/api'
+import * as SearchService from '@features/search/services'
 
 SearchPage.defaultProps = {
   data: {
@@ -35,9 +38,14 @@ SearchPage.defaultProps = {
 
 function SearchPage({ data }) {
   const { token } = useMember()
+  const [keyword, setKeyword] = useState('')
 
   if (token === null) {
     return null
+  }
+
+  const onHandleChange = function(e) {
+    setKeyword(e.target.value)
   }
 
   return (
@@ -45,7 +53,7 @@ function SearchPage({ data }) {
       <Box width={1}>
         <input
           type="text"
-          value="blackpink"
+          value={keyword}
           placeholder="Search for artists, albums or playlists..."
           css={{
             padding: '15px 20px',
@@ -53,16 +61,30 @@ function SearchPage({ data }) {
             border: 'none',
             width: '500px',
           }}
-          onChange={() => {}}
+          onChange={onHandleChange}
         />
       </Box>
-
-      <SearchResults title="Albums" data={data.albums} route="album-detail" />
-      <SearchResults
-        title="Playlists"
-        data={data.playlists}
-        route="playlist-detail"
-      />
+      <Fetch
+        service={() =>
+          SearchService.getByKeyword(keyword, {
+            token: token,
+          })
+        }>
+        {({ data }) => (
+          <>
+            <SearchResults
+              title="Albums"
+              data={data.albums}
+              route="album-detail"
+            />
+            <SearchResults
+              title="Playlists"
+              data={data.playlists}
+              route="playlist-detail"
+            />
+          </>
+        )}
+      </Fetch>
     </Flex>
   )
 }
