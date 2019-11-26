@@ -51,4 +51,5 @@ function HomePage({ albums }) {
   )
 }
 
+
 export default withPage({ restricted: true })(HomePage)
